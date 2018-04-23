@@ -5,26 +5,26 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#define IP "10.122.6.219"//±¾»úIPµØÖ· 
-#define PORT 9156//¶Ë¿ÚºÅ 
-#define QUEUELEN 5//×î¶àÁ¬½Ó¸öÊı 
-int socket_listen;//¼àÌısocket
-struct sockaddr_in my_addr;//sockaddr_in½á¹¹
+#define IP "10.122.6.219"//æœ¬æœºIPåœ°å€ 
+#define PORT 9156//ç«¯å£å· 
+#define QUEUELEN 5//æœ€å¤šè¿æ¥ä¸ªæ•° 
+int socket_listen;//ç›‘å¬socket
+struct sockaddr_in my_addr;//sockaddr_inç»“æ„
 struct sockaddr_in their_addr;
-HANDLE User_server;//×Ó½ø³Ì¾ä±ú
+HANDLE User_server;//å­è¿›ç¨‹å¥æŸ„
 HANDLE Server_user;
-int is_clientclosed=0;//¿Í»§¶ËÁ¬½ÓÊÇ·ñ½¨Á¢
-int is_proxyclosed=0;//·şÎñÆ÷¶ËÁ¬½ÓÊÇ·ñ½¨Á¢
+int is_clientclosed=0;//å®¢æˆ·ç«¯è¿æ¥æ˜¯å¦å»ºç«‹
+int is_proxyclosed=0;//æœåŠ¡å™¨ç«¯è¿æ¥æ˜¯å¦å»ºç«‹
 unsigned _stdcall UserToProxyThread(void *pParam);
 unsigned _stdcall ProxyToServerThread(void *pParam);
 int start() {
-	WORD sockVersion = MAKEWORD(2,2);//Ë«×Ö½ÚÊı,16Î» ½«Á½¸ö×Ö½ÚºÏ³ÉÒ»¸öword,Ç°ÃæÊÇ¸ßÎ»,ºóÃæÊÇµÍÎ»,2±íÊ¾Îª¶ş½øÖÆ
-	//ÊÇ 00000010,2ºÍ2ºÏÔÚÒ»ÆğÊÇ0000001000000010,¼´Ê®½øÖÆµÄ514
+	WORD sockVersion = MAKEWORD(2,2);//åŒå­—èŠ‚æ•°,16ä½ å°†ä¸¤ä¸ªå­—èŠ‚åˆæˆä¸€ä¸ªword,å‰é¢æ˜¯é«˜ä½,åé¢æ˜¯ä½ä½,2è¡¨ç¤ºä¸ºäºŒè¿›åˆ¶
+	//æ˜¯ 00000010,2å’Œ2åˆåœ¨ä¸€èµ·æ˜¯0000001000000010,å³åè¿›åˆ¶çš„514
 	WSADATA wsaData;
-	if(WSAStartup(sockVersion, &wsaData)!=0) {//¸ù¾İ°æ±¾Í¨Öª²Ù×÷ÏµÍ³,ÆôÓÃSOCKETµÄDLL¿â ,°æ±¾2.2
+	if(WSAStartup(sockVersion, &wsaData)!=0) {//æ ¹æ®ç‰ˆæœ¬é€šçŸ¥æ“ä½œç³»ç»Ÿ,å¯ç”¨SOCKETçš„DLLåº“ ,ç‰ˆæœ¬2.2
 		return 1;
 	}
-	socket_listen=socket(AF_INET,SOCK_STREAM,0);//´´½¨socket
+	socket_listen=socket(AF_INET,SOCK_STREAM,0);//åˆ›å»ºsocket
 	if(socket_listen == INVALID_SOCKET) {
 		WSACleanup();
 		printf("socket error!\n");
@@ -33,12 +33,12 @@ int start() {
 	my_addr.sin_family=AF_INET;
 	my_addr.sin_port=htons(PORT);
 	my_addr.sin_addr.s_addr=inet_addr(IP);
-	memset(&(my_addr.sin_zero),0,8);//ÆäÓà²¿·ÖÖÃÁã
+	memset(&(my_addr.sin_zero),0,8);//å…¶ä½™éƒ¨åˆ†ç½®é›¶
 	their_addr.sin_family=AF_INET;
 	their_addr.sin_port=htons(80);
 	their_addr.sin_addr.s_addr=INADDR_ANY;
 	memset(&(their_addr.sin_zero),0,8);
-	//ÌîĞ´sockaddr_in½á¹¹
+	//å¡«å†™sockaddr_inç»“æ„
 	if(bind(socket_listen,(struct sockaddr *)&my_addr,sizeof(my_addr))==SOCKET_ERROR) {
 		WSACleanup();
 		printf("bind error! %d\n",WSAGetLastError());
@@ -49,7 +49,7 @@ int start() {
 		printf("listen error! %d\n",WSAGetLastError());
 		return 4;
 	}
-	User_server=(HANDLE)_beginthreadex(NULL,0,UserToProxyThread,NULL,0,NULL);//¿ªÊ¼¼àÌı
+	User_server=(HANDLE)_beginthreadex(NULL,0,UserToProxyThread,NULL,0,NULL);//å¼€å§‹ç›‘å¬
 	return 0;
 }
 int stop() {
@@ -62,7 +62,7 @@ unsigned _stdcall UserToProxyThread(void *pParam) {
 	char buffer[65536];
 	int socket_message,socket_send;
 	socket_message=accept(socket_listen,(struct sockaddr*)&their_addr,(int *)sizeof(their_addr)); 
-	User_server=(HANDLE)_beginthreadex(NULL,0,UserToProxyThread,NULL,0,NULL);//¿ªÆôÁíÒ»¸ö½ø³Ì¼ÌĞø¼àÌı
+	User_server=(HANDLE)_beginthreadex(NULL,0,UserToProxyThread,NULL,0,NULL);//å¼€å¯å¦ä¸€ä¸ªè¿›ç¨‹ç»§ç»­ç›‘å¬
 	if(socket_message==INVALID_SOCKET) {
 		printf("accept error! %d\n",WSAGetLastError());
 		return 5;
